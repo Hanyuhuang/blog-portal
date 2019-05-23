@@ -16,7 +16,7 @@
           尽管如此，如果你对JVM有足够了解，就会对Java有更好的掌握，并且能解决一些看起来简单但又尚未解决的问题。
         </div>
         <div style="float: right;width: 20%;text-align: center">
-          <img src="../assets/describe.jpg" width="100px" height="100px">
+          <img src="../../assets/describe.jpg" width="100px" height="100px">
         </div>
       </div>
       <div>
