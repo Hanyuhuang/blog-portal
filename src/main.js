@@ -15,6 +15,7 @@ Vue.use(iView)
 Vue.use(iviewArea)
 Vue.use(mavonEditor)
 
+axios.defaults.withCredentials = true
 Vue.prototype.$axios = axios;
 Vue.prototype.$USER_URL = 'http://localhost:8081';
 Vue.prototype.$ARTICLE_URL = 'http://localhost:8082';

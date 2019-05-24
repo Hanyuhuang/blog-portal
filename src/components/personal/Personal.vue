@@ -21,14 +21,14 @@
              <MenuItem name="myArticle" to="/myArticle">我的文章</MenuItem>
              <MenuItem name="follow">我的收藏</MenuItem>
              <MenuItem name="star">我赞过的</MenuItem>
-             <MenuItem name="view">浏览历史</MenuItem>
+             <MenuItem name="view" to="/myView">浏览历史</MenuItem>
              <MenuItem name="logout" to="/logout">退出登录</MenuItem>
              <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
            </Menu>
          </Sider>
          <!--主要部分-->
            <Content style="margin-left: 50px">
-             <Card style="height: 647px">
+             <Card style="height: 660px">
                <router-view></router-view>
              </Card>
            </Content>

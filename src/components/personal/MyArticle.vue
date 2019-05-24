@@ -3,7 +3,7 @@
     <Row>
       <Col span="8">
         <Button size="large" @click="removeAll">批量删除</Button>
-        <Button type="success"size="large" @click="showForm()">写文章</Button>
+        <Button type="success"size="large" @click="showForm(false)">写文章</Button>
       </Col>
       <Col span="6" offset="8">
         <Input search size="large" placeholder="输入搜索内容" model="keywords">{{keywords}}</Input>
@@ -36,7 +36,7 @@
       :loading="isShow"
       footer-hide>
       <!--写文章-->
-      <div v-if="!isEdit">
+      <div>
           <Form v-model="article" :label-width="80" style="margin-left: 50px;margin-top: 20px" >
             <FormItem label="文章标题">
               <Input v-model="article.title" style="width: 260px"></Input>
@@ -61,7 +61,7 @@
                 </div>
               </Upload>
             </FormItem>
-            <mavon-editor @change="showCode"/>
+            <mavon-editor v-model="article.mdContent" @change="showCode"/>
             <FormItem style="margin-top: 15px">
               <Button type="primary" @click="submit" style="margin-left: 60px;">提交</Button>
               <Button  @click="reset" >重置</Button>
@@ -96,6 +96,7 @@
             title:'',
             image:'',
             content:'',
+            mdContent:'',
             tag:'',
             createTime:'',
             userId:'',
@@ -165,7 +166,7 @@
         // 获取文章数据列表
         getArticleList(){
           this.loading = true;
-          this.$axios.get(this.$ARTICLE_URL+"/article/list",{
+          this.$axios.get(this.$ARTICLE_URL+"/article/myArticle",{
             params:{
               pageCur:this.pageCur,
               pageSize:this.pageSize,
@@ -174,18 +175,20 @@
               //keywords:this.keywords
             }
           }).then((resp)=>{
-            this.total = resp.data.total;
-            this.articleList = resp.data.items;
+            this.total = resp.data.total
+            this.articleList = resp.data.items
             this.loading = false;
-            console.log(this.articleList)
           })
         },
         // 显示表单
         showForm(isEdit,row){
+          this.article = {}
           this.isEdit = isEdit;
           if (isEdit){
-            this.$axios.get("/article/"+row.id).then((resp)=>{
+            this.$axios.get(this.$ARTICLE_URL+"/article/"+row.id).then((resp)=>{
               this.article = resp.data;
+              this.selectedList = resp.data.tag.split(",")
+              console.log(resp.data)
             })
           }
           this.isShow = true;
@@ -218,10 +221,9 @@
         },
         // 修改文章
         edit() {
-          console.log(user)
           this.$axios.put(this.$ARTICLE_URL+"/article",this.article).then(()=>{
-            this.getArticleList();
             this.$Message.success("修改成功!");
+            this.getArticleList();
             this.isShow = false;
           }).catch(()=>{
             this.$Message.error("修改失败!");
@@ -258,7 +260,7 @@
                   ids.push(item.id)
                 })
                 // 发起删除请求
-                this.$axios.delete("user",{
+                this.$axios.delete(this.$ARTICLE_URL+"/view",{
                   params:{
                     ids:ids
                   },
@@ -281,7 +283,7 @@
         },
         // 换页
         changePage(page){
-          this.pageNow = page;
+          this.pageCur = page;
           this.getArticleList();
         },
         // 修改每页显示数量

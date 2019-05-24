@@ -36,7 +36,7 @@
         </Card>
       </div>
       <br/>
-      <Button type="default" size="large" shape="circle" long >查看更多</Button>
+      <Button type="default" size="large" shape="circle" long to="/article">查看更多</Button>
     </div>
     <div style="width:25%;text-align: center;float: right">
       <Card>
@@ -91,7 +91,12 @@
         methods:{
           // 查询最新文章列表
            getArticleList(){
-              this.$axios.get(this.$ARTICLE_URL+"/article/recent").then((resp)=>{
+              this.$axios.get(this.$ARTICLE_URL+"/article/list",{
+                params:{
+                  pageCur:1,
+                  pageSize:5,
+                }
+              }).then((resp)=>{
                   this.recentArticles = resp.data.items
               })
              this.$axios.get(this.$ARTICLE_URL+"/article/hot").then((resp)=>{
@@ -100,11 +105,15 @@
            },
             // 查看文章详情
             getArticleDetail(id){
-              this.$router.push({
-                path:'/article/detail',
-                query:{
-                  id:id
-                }
+              this.$axios.post(this.$ARTICLE_URL+"/view",id).then(()=>{
+                  this.$router.push({
+                    path:'/article/detail',
+                    query:{
+                      id:id
+                    }
+                  })
+              }).catch(()=>{
+                  this.$Message.error("发生了未知的错误！")
               })
             },
           // 显示HTML代码的文本内容
@@ -115,7 +124,7 @@
           // 时间处理
           dateFormat(date){
             return  formatDate(new Date(date),'yyyy-MM-dd hh:mm')
-          }
+          },
         },
         mounted() {
            this.getArticleList()

@@ -1,7 +1,7 @@
 <template>
      <Layout>
        <!--导航栏-->
-       <Menu mode="horizontal" active-name="home" style="letter-spacing:2px">
+       <Menu mode="horizontal" :active-name="activeName" ref="activeName" style="letter-spacing:2px">
          <Col span="3" offset="1">
            <span style="font-size: 30px;color: coral;letter-spacing:5px">博客</span>
          </Col>
@@ -117,6 +117,7 @@
           return{
             isShow:false,
             isLogin:true,
+            activeName:'home',
             user:{
               id:'',
               name:'',
@@ -234,7 +235,7 @@
               this.user = resp.data
               sessionStorage.setItem("user",resp.data.id)
               this.isShow = false;
-              setInterval(()=>{window.location.reload()},500)
+              this.$router.push(this.$route.fullPath)
             }).catch(()=>{
               this.$Message.error("用户名或密码错误!")
             })
@@ -246,7 +247,14 @@
         },
         mounted() {
            this.user.id = sessionStorage.getItem("user")
-        }
+
+        },
+      watch:{
+          $route(to,from){
+            const path = to.path.split("/")
+            this.activeName = path[1]
+          }
+      }
     }
 </script>
 

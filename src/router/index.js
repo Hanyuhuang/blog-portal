@@ -10,6 +10,7 @@ import Personal from '@/components/personal/Personal'
 import User from '@/components/personal/User'
 import Logout from '@/components/personal/Logout'
 import MyArticle from '@/components/personal/MyArticle'
+import MyView from '@/components/personal/MyView'
 
 Vue.use(Router)
 
@@ -32,6 +33,10 @@ export default new Router({
               {
                 path:'/myArticle',
                 component:MyArticle,
+              },
+              {
+                path:'/myView',
+                component:MyView,
               },
               {
                 path:'/logout',
