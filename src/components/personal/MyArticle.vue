@@ -47,7 +47,7 @@
               </Select>
             </FormItem>
             <FormItem label="文章图片">
-              <img v-if="article.image!=''" :src="article.image" style="height: 60px;width: 60px;margin-left: 20px">
+              <img v-if="article.image.length>1" :src="article.image" style="height: 60px;width: 60px;margin-left: 20px">
               <Upload
                 :format="['jpg','jpeg','png']"
                 :max-size="2048*5"
@@ -61,7 +61,7 @@
                 </div>
               </Upload>
             </FormItem>
-            <mavon-editor v-model="article.mdContent" @change="showCode"/>
+            <mavon-editor ref="md" v-model="article.mdContent" @imgAdd="imgAdd" @change="showCode"/>
             <FormItem style="margin-top: 15px">
               <Button type="primary" @click="submit" style="margin-left: 60px;">提交</Button>
               <Button  @click="reset" >重置</Button>
@@ -134,11 +134,17 @@
               }
             },
             {
-              type:'html',
               title:'内容',
               key:'content',
               tooltip:true,
-              align: 'center'
+              align: 'center',
+              render: (h,params)=>{
+                function toText(HTML) {
+                  const value = HTML
+                  return value.replace(/<(style|script|iframe)[^>]*?>[\s\S]+?<\/\1\s*>/gi, '').replace(/<[^>]+?>/g, '').replace(/\s+/g, ' ').replace(/ /g, ' ').replace(/>/g, ' ');
+                }
+                return h('div', toText(params.row.content))
+              }
             },
             {
               title:'发表时间',
@@ -147,7 +153,7 @@
               tooltip:true,
               render: (h,params)=>{
                 return h('div',
-                  formatDate(new Date(params.row.createTime),'yyyy-MM-dd hh:mm')
+                  formatDate(new Date(params.row.createTime),'yyyy-MM-dd hh:mm:ss')
                   //'yyyy-MM-dd hh:mm' 对应的时间格式2018-12-21 ：18：46
                   //格式可以自行修改，例如 'yyyy-MM-dd' 'yyyy-MM'
                   //Date是后台时间戳参数名字
@@ -178,6 +184,10 @@
             this.total = resp.data.total
             this.articleList = resp.data.items
             this.loading = false;
+          }).catch((resp)=>{
+            this.$Message.info("你的登录已过期，请重新登录！")
+            sessionStorage.removeItem("user")
+            this.$router.push(this.$route.fullPath)
           })
         },
         // 显示表单
@@ -204,13 +214,15 @@
         //  写文章
         add(){
           // 处理标签
-          this.selectedList.forEach((tag,i)=>{
+          if (this.selectedList.length>1){
+            this.selectedList.forEach((tag,i)=>{
               if (i==this.selectedList.length-1){
                 this.article.tag+= tag
               } else{
                 this.article.tag+= tag+","
               }
-          })
+            })
+          }
           this.$axios.post(this.$ARTICLE_URL+"/article",this.article).then(()=>{
             this.$Message.success("添加成功!");
             this.getArticleList();
@@ -297,8 +309,25 @@
         },
         //图片上传成功
         handleSuccess(response, file, fileList){
+          console.log(response)
           this.article.image = response
         },
+        imgAdd(pos, file){
+          // 第一步.将图片上传到服务器.
+          const formdata = new FormData();
+          formdata.append('file', file);
+          this.$axios({
+            url: 'http://localhost:8091/upload/image',
+            method: 'post',
+            data: formdata,
+            headers: { 'Content-Type': 'multipart/form-data' },
+          }).then((resp) => {
+            // 第二步.将返回的url替换到文本原位置![...](0) -> ![...](url)
+            // $vm.$img2Url 详情见本页末尾
+            console.log(resp.data)
+            this.$refs.md.$img2Url(pos, resp.data);
+          })
+        }
       },
       mounted() {
         this.article.userId = sessionStorage.getItem("user")

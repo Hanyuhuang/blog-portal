@@ -1,6 +1,6 @@
 <template>
 
-     <Button shape="circle" to="https://github.com/Hanyuhuang" target="_blank">
+     <Button shape="circle" to="https://github.com/Hanyuhuang/blog" target="_blank">
        <Icon :size="30" type="logo-github" />
      </Button>
 

@@ -25,9 +25,9 @@
        <!--点赞收藏评论数-->
        <div style="float: right;margin-top: 10px">
          <Icon type="md-eye"/> {{articleDetail.views}}&nbsp;&nbsp;&nbsp;&nbsp;
-         <Icon type="md-thumbs-up" @click="star"style="cursor:pointer"/>{{articleDetail.stars}} &nbsp;&nbsp;&nbsp;&nbsp;
-         <Icon type="md-heart" style="cursor:pointer"/>{{articleDetail.follows}}&nbsp;&nbsp;&nbsp;&nbsp;
-         <Icon type="md-chatboxes" style="cursor:pointer"/>{{articleDetail.comments}}&nbsp;&nbsp;&nbsp;&nbsp;
+         <Icon type="md-thumbs-up" :color="articleDetail.star?'red':''" @click="star"style="cursor:pointer"/>{{articleDetail.stars}} &nbsp;&nbsp;&nbsp;&nbsp;
+         <Icon type="md-heart" :color="articleDetail.follow?'red':''" @click="follow" style="cursor:pointer"/>{{articleDetail.follows}}&nbsp;&nbsp;&nbsp;&nbsp;
+         <Icon type="md-chatboxes"/>{{articleDetail.comments}}&nbsp;&nbsp;&nbsp;&nbsp;
        </div>
        <br/>
      </Card>
@@ -115,6 +115,8 @@
               follows:0,
               stars:0,
               comments:0,
+              star:false,
+              follow:false,
             },
             comment:{},
             reply:{},
@@ -130,6 +132,7 @@
                this.$axios.get(this.$ARTICLE_URL+"/article/detail/"+id).then((resp)=>{
                  this.articleDetail = resp.data;
                  this.articleDetail.tags = resp.data.article.tag.split(",")
+                 console.log(this.articleDetail)
                }).catch(()=>{
                  this.$Message.error("发生了未知的异常")
                })
@@ -140,7 +143,7 @@
             },
             // 时间处理
             dateFormat(date){
-              return formatDate(new Date(date),'yyyy-MM-dd hh:mm')
+              return formatDate(new Date(date),'yyyy-MM-dd hh:mm:ss')
             },
             // 添加评论
             addComment(){
@@ -173,8 +176,31 @@
                })
             },
             star(){
-               window.alert("👍")
-            }
+               // 取消点赞
+               if (this.articleDetail.star){
+                  this.$axios.delete(this.$ARTICLE_URL+"/star/"+this.articleDetail.article.id).then(()=>{
+                    this.getArticleDetail(this.$route.query.id)
+                  })
+                 // 点赞
+               } else {
+                 this.$axios.post(this.$ARTICLE_URL+"/star",{articleId:this.articleDetail.article.id}).then(()=>{
+                   this.getArticleDetail(this.$route.query.id)
+                 })
+               }
+            },
+            follow(){
+              // 取消收藏
+              if (this.articleDetail.follow){
+                this.$axios.delete(this.$ARTICLE_URL+"/follow/"+this.articleDetail.article.id).then(()=>{
+                  this.getArticleDetail(this.$route.query.id)
+                })
+                // 收藏
+              } else {
+                this.$axios.post(this.$ARTICLE_URL+"/follow",{articleId:this.articleDetail.article.id}).then(()=>{
+                  this.getArticleDetail(this.$route.query.id)
+                })
+              }
+            },
         },
         mounted() {
             this.userId = sessionStorage.getItem("user")

@@ -67,6 +67,15 @@
               this.articleList = resp.data.items
             })
           },
+          // 查看文章详情
+          getArticleDetail(id){
+            this.$router.push({
+              path:'/article/detail',
+              query:{
+                id:id
+              }
+            })
+          },
           // 换页
           changePage(page){
             this.pageCur = page;

@@ -50,7 +50,9 @@
           热门文章推荐
         </p>
         <div style="text-align: left">
-          <a v-for="article in hotArticles" href="#">{{article.title}}</a><br/>
+          <div v-for="article in hotArticles">
+            <a href="#">{{article.title}}</a><br/>
+          </div>
         </div>
       </Card>
       <Card style="margin-top: 30px">
@@ -105,7 +107,8 @@
            },
             // 查看文章详情
             getArticleDetail(id){
-              this.$axios.post(this.$ARTICLE_URL+"/view",id).then(()=>{
+              this.$axios.post(this.$ARTICLE_URL+"/view/"+id).then(()=>{
+                  console.log(id)
                   this.$router.push({
                     path:'/article/detail',
                     query:{
@@ -123,7 +126,7 @@
             },
           // 时间处理
           dateFormat(date){
-            return  formatDate(new Date(date),'yyyy-MM-dd hh:mm')
+            return  formatDate(new Date(date),'yyyy-MM-dd hh:mm:ss')
           },
         },
         mounted() {

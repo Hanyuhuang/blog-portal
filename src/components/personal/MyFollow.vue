@@ -2,15 +2,14 @@
   <div>
     <Row>
       <Col span="8">
-        <Button size="large" @click="removeSome">批量删除</Button>
-        <Button type="success"size="large" @click="removeAll">清空全部</Button>
+        <Button size="large" @click="removeSome">取消收藏</Button>
       </Col>
     </Row>
     <br>
     <Table border ref="selection" :loading="loading" :columns="cols" :data="articleList" @on-selection-change="selected">
       <template slot-scope="{ row, index }" slot="action">
         <Button type="primary" size="small" @click="getArticleDetail(row)">查看</Button>
-        <Button type="error" size="small" @click="remove(row)">删除</Button>
+        <Button type="error" size="small" @click="remove(row)">取消</Button>
       </template>
     </Table>
     <br>
@@ -28,7 +27,7 @@
 <script>
     import {formatDate} from "@/common";
     export default {
-        name: "MyArticle",
+        name: "MyFollow",
       data(){
         return{
           total:0,
@@ -110,7 +109,7 @@
         // 获取文章数据列表
         getArticleList(){
           this.loading = true;
-          this.$axios.get(this.$ARTICLE_URL+"/view/list",{
+          this.$axios.get(this.$ARTICLE_URL+"/follow/list",{
             params:{
               pageCur:this.pageCur,
               pageSize:this.pageSize,
@@ -135,7 +134,7 @@
           this.$Modal.confirm({
             title:'是否删除?',
             onOk:()=>{
-              this.$axios.delete(this.$ARTICLE_URL+"/view/"+row.article.id).then(()=>{
+              this.$axios.delete(this.$ARTICLE_URL+"/follow",{params:{articleId:row.article.id}}).then(()=>{
                 this.getArticleList();
                 this.$Message.success("删除成功!");
               }).catch(()=>{
@@ -161,11 +160,14 @@
                   ids.push(item.article.id)
                 })
                 // 发起删除请求
-                this.$axios.delete(this.$ARTICLE_URL+"/view", {
-                  params:{ids:ids},
+                this.$axios.delete(this.$ARTICLE_URL+"/follow",{
+                  params:{
+                    ids:ids
+                  },
                   paramsSerializer: params => {
                     return this.$qs.stringify(params, { indices: false })
                   }
+                  // 请求成功
                 }).then((resp)=>{
                   this.getArticleList()
                   this.$Message.success("共删除"+resp.data+"条记录！")
@@ -178,20 +180,6 @@
           }else {
             this.$Message.info("请选择一行再删除!");
           }
-        },
-        // 全部删除
-        removeAll(){
-          this.$Modal.confirm({
-            title:'是否删除?',
-            onOk:()=>{
-              this.$axios.delete(this.$ARTICLE_URL+"/view/all").then((resp)=>{
-                this.$Message.success("共删除"+resp.data+"条记录！")
-                this.getArticleList()
-              }).catch(()=>{
-                this.$Message.error("删除失败!")
-              })
-            }
-          });
         },
         // 换页
         changePage(page){

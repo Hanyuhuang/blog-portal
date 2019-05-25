@@ -21,9 +21,9 @@
            <Input size="large" search placeholder="搜索文章" style="border-radius:10px"></Input>
          </Col>
          <Col span="3" offset="1">
-           <Button v-if="this.user.id!=null" type="text" to="/info" style="color: coral;font-size: larger">个人中心</Button>
-           <Button v-if="this.user.id==null" type="primary" shape="circle" ghost style="font-size:15px;" @click="showForm(true)">登录</Button>
-           <Button v-if="this.user.id==null" type="warning" shape="circle" ghost style="font-size: 15px;" @click="showForm(false)">注册</Button>
+           <Button v-if="this.$user!=null" type="text" to="/info" style="color: coral;font-size: larger">个人中心</Button>
+           <Button v-if="this.$user==null" type="primary" shape="circle" ghost style="font-size:15px;" @click="showForm(true)">登录</Button>
+           <Button v-if="this.$user==null" type="warning" shape="circle" ghost style="font-size: 15px;" @click="showForm(false)">注册</Button>
          </Col>
        </Menu>
        <!--登录注册-->
@@ -245,15 +245,11 @@
             this.user.image = response
           },
         },
-        mounted() {
-           this.user.id = sessionStorage.getItem("user")
-
-        },
       watch:{
           $route(to,from){
             const path = to.path.split("/")
             this.activeName = path[1]
-          }
+          },
       }
     }
 </script>

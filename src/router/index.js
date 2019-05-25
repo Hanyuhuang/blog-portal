@@ -11,6 +11,8 @@ import User from '@/components/personal/User'
 import Logout from '@/components/personal/Logout'
 import MyArticle from '@/components/personal/MyArticle'
 import MyView from '@/components/personal/MyView'
+import MyStar from '@/components/personal/MyStar'
+import MyFollow from '@/components/personal/MyFollow'
 
 Vue.use(Router)
 
@@ -33,6 +35,14 @@ export default new Router({
               {
                 path:'/myArticle',
                 component:MyArticle,
+              },
+              {
+                path:'/myStar',
+                component:MyStar,
+              },
+              {
+                path:'/myFollow',
+                component:MyFollow,
               },
               {
                 path:'/myView',

@@ -9,6 +9,7 @@ import axios from 'axios'
 import iviewArea from 'iview-area';
 import mavonEditor from 'mavon-editor'
 import 'mavon-editor/dist/css/index.css'
+import qs from 'qs'
 
 Vue.config.productionTip = false
 Vue.use(iView)
@@ -16,7 +17,9 @@ Vue.use(iviewArea)
 Vue.use(mavonEditor)
 
 axios.defaults.withCredentials = true
+Vue.prototype.$user = sessionStorage.getItem("user");
 Vue.prototype.$axios = axios;
+Vue.prototype.$qs = qs;
 Vue.prototype.$USER_URL = 'http://localhost:8081';
 Vue.prototype.$ARTICLE_URL = 'http://localhost:8082';
 /* eslint-disable no-new */

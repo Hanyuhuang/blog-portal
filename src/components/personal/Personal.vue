@@ -3,7 +3,7 @@
        <Layout v-if="user.id!=null">
          <!--侧边栏-->
          <Sider>
-           <Menu active-name="info" style="text-align: center;">
+           <Menu :active-name="activeName" style="text-align: center;">
              <br/><br/>
              <Upload
                :format="['jpg','jpeg','png']"
@@ -15,12 +15,11 @@
                style="display: inline-block;">
                <img :src="user.image" style="border-radius:50%;height: 60px;width: 60px;">
              </Upload>
-
              <br/><br/><br/>
              <MenuItem name="info" to="/info">基本信息</MenuItem>
              <MenuItem name="myArticle" to="/myArticle">我的文章</MenuItem>
-             <MenuItem name="follow">我的收藏</MenuItem>
-             <MenuItem name="star">我赞过的</MenuItem>
+             <MenuItem name="follow" to="/myFollow">我的收藏</MenuItem>
+             <MenuItem name="star" to="/myStar">我赞过的</MenuItem>
              <MenuItem name="view" to="/myView">浏览历史</MenuItem>
              <MenuItem name="logout" to="/logout">退出登录</MenuItem>
              <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
@@ -45,6 +44,7 @@
         name: "Personal",
         data(){
           return{
+             activeName:'info',
              user:{
                id:'',
                name:'',
@@ -74,7 +74,13 @@
        },
        mounted() {
           this.getUserById(sessionStorage.getItem("user"))
-       }
+       },
+        watch:{
+          $route(to,from){
+            const path = to.path.split("/")
+            this.activeName = path[1]
+          }
+        }
     }
 </script>
 
