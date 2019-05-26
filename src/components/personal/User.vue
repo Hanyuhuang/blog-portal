@@ -105,7 +105,11 @@
                  this.user = resp.data;
                  this.user.birthday = formatDate(new Date(resp.data.birthday),'yyyy-MM-dd')
                  this.selectedCity = resp.data.address.split("-")
-             })
+             }).catch(()=>{
+              this.$Message.info("你的登录已过期，请重新登录！")
+              sessionStorage.removeItem("user")
+              this.$router.push(this.$route.fullPath)
+            })
           },
           // 发送验证码
           sendCode(){

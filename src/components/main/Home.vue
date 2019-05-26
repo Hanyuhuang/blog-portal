@@ -131,7 +131,8 @@
         },
         mounted() {
            this.getArticleList()
-        }
+        },
+
     }
 </script>
 

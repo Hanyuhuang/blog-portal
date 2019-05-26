@@ -22,6 +22,8 @@ Vue.prototype.$axios = axios;
 Vue.prototype.$qs = qs;
 Vue.prototype.$USER_URL = 'http://localhost:8081';
 Vue.prototype.$ARTICLE_URL = 'http://localhost:8082';
+Vue.prototype.$UPLOAD_URL = 'http://localhost:8091';
+Vue.prototype.$WEBSOCKET_URL = 'ws://localhost:8092/websocket/';
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

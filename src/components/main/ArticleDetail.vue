@@ -67,8 +67,8 @@
            </div>
            <!--回复框-->
            <div v-if="isShowReplyBox[i]">
-             <Input :disabled="userId==null"
-                    :placeholder="userId==null?'登录后回复':'输入你的回复内容'"
+             <Input :disabled="$user==null"
+                    :placeholder="$user==null?'登录后回复':'输入你的回复内容'"
                     style="margin-top: 5px;"
                     v-model="reply.content"></Input><br/>
              <Button style="float: right;margin-top: 8px" @click="addReply(item.comment.id)">回复</Button><br/><br/>
@@ -84,9 +84,9 @@
      <!--添加评论-->
      <Card :dis-hover="true" style="margin-top: 20px">
        <h1 style="margin-left: 20px">添加评论</h1><br/>
-       <mavon-editor :editable="userId!=null"
+       <mavon-editor :editable="$user!=null"
                      :model="content"
-                     :placeholder="userId==null?'登录后发表评论':'说点什么吧~'"
+                     :placeholder="$user==null?'登录后发表评论':'说点什么吧~'"
                      @change="getCode">
        </mavon-editor>
        <Button type="success"
@@ -107,7 +107,7 @@
         data(){
           return {
             articleDetail:{
-              article:{id:'',title:'',tag:'',content:'',createTime:''},
+              article:{id:'',userId:'',title:'',tag:'',content:'',createTime:''},
               user:{},
               tags:[],
               commentList:[],
@@ -118,9 +118,8 @@
               star:false,
               follow:false,
             },
-            comment:{},
+            commentVo:{comment:{},user:{}},
             reply:{},
-            userId:'',
             content:'',
             isShowReplyBox:[],
           }
@@ -132,14 +131,13 @@
                this.$axios.get(this.$ARTICLE_URL+"/article/detail/"+id).then((resp)=>{
                  this.articleDetail = resp.data;
                  this.articleDetail.tags = resp.data.article.tag.split(",")
-                 console.log(this.articleDetail)
                }).catch(()=>{
                  this.$Message.error("发生了未知的异常")
                })
             },
             // 获取富文本的HTML代码
             getCode(status,value){
-               this.comment.content = value
+               this.commentVo.comment.content = value
             },
             // 时间处理
             dateFormat(date){
@@ -147,9 +145,9 @@
             },
             // 添加评论
             addComment(){
-               this.comment.articleId = this.articleDetail.article.id
-               this.comment.userId = this.userId
-               this.$axios.post(this.$ARTICLE_URL+"/comment",this.comment).then(()=>{
+               this.commentVo.comment.articleId = this.articleDetail.article.id
+               this.commentVo.user.id = this.articleDetail.user.id
+               this.$axios.post(this.$ARTICLE_URL+"/comment",this.commentVo).then(()=>{
                   this.$Message.success("评论成功")
                   this.content = ''
                   this.getArticleDetail(this.$route.query.id)
@@ -183,8 +181,18 @@
                   })
                  // 点赞
                } else {
-                 this.$axios.post(this.$ARTICLE_URL+"/star",{articleId:this.articleDetail.article.id}).then(()=>{
+                 // 判断文章作者是否为自己
+                 if (this.articleDetail.article.userId == this.$user){
+                    this.$Message.error("不能给自己点赞！")
+                    return;
+                 }
+                 const starVo = {star:{},user:{}}
+                 starVo.star.articleId = this.articleDetail.article.id
+                 starVo.user.id = this.articleDetail.user.id
+                 this.$axios.post(this.$ARTICLE_URL+"/star",starVo).then(()=>{
                    this.getArticleDetail(this.$route.query.id)
+                 }).catch(()=>{
+                   this.$Message.error("登录后再操作")
                  })
                }
             },
@@ -196,14 +204,25 @@
                 })
                 // 收藏
               } else {
-                this.$axios.post(this.$ARTICLE_URL+"/follow",{articleId:this.articleDetail.article.id}).then(()=>{
+                // 判断文章作者是否为自己
+                if (this.articleDetail.user.id == this.$user ){
+                  console.log(this.articleDetail)
+                  console.log(this.$user)
+                  this.$Message.error("不能给收藏自己文章！")
+                  return;
+                }
+                const followVo = {follow:{},user:{}}
+                followVo.follow.articleId = this.articleDetail.article.id
+                followVo.user.id = this.articleDetail.user.id
+                this.$axios.post(this.$ARTICLE_URL+"/follow",followVo).then(()=>{
                   this.getArticleDetail(this.$route.query.id)
+                }).catch(()=>{
+                  this.$Message.error("发生了未知的异常")
                 })
               }
             },
         },
         mounted() {
-            this.userId = sessionStorage.getItem("user")
             this.getArticleDetail(this.$route.query.id)
         }
     }

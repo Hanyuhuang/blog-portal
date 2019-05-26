@@ -52,30 +52,6 @@
            <FormItem label="密码" >
              <Input type="password" v-model="user.password" style="width: 200px"></Input>
            </FormItem>
-           <FormItem label="头像">
-             <img v-if="user.image!=''" :src="user.image" style="height: 60px;width: 60px;margin-left: 20px">
-             <Upload
-               :format="['jpg','jpeg','png']"
-               :max-size="2048*5"
-               :on-success="handleSuccess"
-               :show-upload-list="false"
-               type="drag"
-               action="http://localhost:8091/upload/image"
-               style="display: inline-block;width:58px;">
-               <div style="width: 58px;height:58px;line-height: 58px;">
-                 <Icon type="ios-camera" size="20"></Icon>
-               </div>
-             </Upload>
-           </FormItem>
-           <FormItem label="生日" >
-             <DatePicker v-model="user.birthday" style="width: 200px"></DatePicker>
-           </FormItem>
-           <FormItem label="性别" >
-             <RadioGroup v-model="user.sex">
-               <Radio label="男"></Radio>
-               <Radio label="女"></Radio>
-             </RadioGroup>
-           </FormItem>
            <FormItem label="手机" >
              <Input v-model="user.phone" style="width: 200px"></Input>
            </FormItem>
@@ -85,9 +61,6 @@
            <FormItem label="验证码" >
              <Input v-model="code" style="width: 105px"></Input>
              <Button :disabled="!btnClickable" @click="sendCode">{{btnText}}</Button>
-           </FormItem>
-           <FormItem label="地址">
-             <al-cascader :value="selectedCity" v-model="selectedCity" data-type="name" style="width: 200px"></al-cascader>
            </FormItem>
            <FormItem >
              <Button type="primary" style="margin-left:35px" @click="handleSubmit('user')">注册</Button>
@@ -122,18 +95,13 @@
               id:'',
               name:'',
               password:'',
-              image:'',
-              sex:'男',
-              birthday:'',
               phone:'',
               email:'',
-              address:'',
               loginName:'',
             },
             code:'',
             btnClickable:true,
             btnText:'获取验证码',
-            selectedCity:[],
           }
         },
         methods:{
@@ -203,17 +171,10 @@
           handleSubmit (name) {
             // 验证 邮箱 手机
              if (this.checkEmailIsValid() || this.checkPhoneIsValid())  return;
-            //  地址处理
-            this.user.address = ''
-            this.selectedCity.forEach((city,i)=>{
-                if (i==this.selectedCity.length-1) this.user.address += city;
-                else this.user.address += city+"-"
-            })
             // 注册
               this.$axios.post(this.$USER_URL+"/user",{user:this.user,code:this.code}).then(()=>{
                 this.$Message.success('注册成功!');
                 this.isShow = false;
-                this.isLoginEd = true;
                 this.user={};
               }).catch(()=>{
                 this.$Message.error('注册失败!');
@@ -232,17 +193,31 @@
                 }
               }).then((resp)=>{
               this.$Message.success("登录成功!")
-              this.user = resp.data
+              this.$user = resp.data.id
               sessionStorage.setItem("user",resp.data.id)
               this.isShow = false;
-              this.$router.push(this.$route.fullPath)
+              this.connect(resp.data.id)
             }).catch(()=>{
               this.$Message.error("用户名或密码错误!")
             })
           },
-          //图片上传成功
-          handleSuccess(response, file, fileList){
-            this.user.image = response
+          // websocket
+          connect(id){
+            const socket = new WebSocket(this.$WEBSOCKET_URL+id)
+            socket.onopen = this.onOpen
+            socket.onclose = this.onClose
+            socket.onmessage = this.onMessage
+            socket.onerror = this.onError
+          },
+          onOpen(){console.log("建立连接")},
+          onClose(){console.log("关闭连接")},
+          onError(){console.log("发生异常")},
+          onMessage(resp){
+            console.log(resp)
+            this.$Notice.info({
+              title:'你有一条新的消息，注意查收',
+              desc:resp.data
+            })
           },
         },
       watch:{

@@ -117,8 +117,13 @@
           }).then((resp)=>{
             this.total = resp.data.total
             this.articleList = resp.data.items
-            this.loading = false;
+
+          }).catch(()=>{
+            this.$Message.info("你的登录已过期，请重新登录！")
+            sessionStorage.removeItem("user")
+            this.$router.push(this.$route.fullPath)
           })
+          this.loading = false;
         },
         // 查看文章详情
         getArticleDetail(row){

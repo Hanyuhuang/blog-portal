@@ -10,6 +10,7 @@ import Personal from '@/components/personal/Personal'
 import User from '@/components/personal/User'
 import Logout from '@/components/personal/Logout'
 import MyArticle from '@/components/personal/MyArticle'
+import MyMessage from '@/components/personal/MyMessage'
 import MyView from '@/components/personal/MyView'
 import MyStar from '@/components/personal/MyStar'
 import MyFollow from '@/components/personal/MyFollow'
@@ -31,6 +32,10 @@ export default new Router({
               {
                 path:'/info',
                 component:User,
+              },
+              {
+                path:'/myMessage',
+                component:MyMessage,
               },
               {
                 path:'/myArticle',
