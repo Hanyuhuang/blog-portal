@@ -18,13 +18,13 @@
                </Upload>
              </Tooltip>
              <br/><br/><br/>
-             <MenuItem name="info" to="/info">基本信息</MenuItem>
-             <MenuItem name="myMessage" to="/myMessage">我的消息</MenuItem>
-             <MenuItem name="myArticle" to="/myArticle">我的文章</MenuItem>
-             <MenuItem name="follow" to="/myFollow">我的收藏</MenuItem>
-             <MenuItem name="star" to="/myStar">我赞过的</MenuItem>
-             <MenuItem name="view" to="/myView">浏览历史</MenuItem>
-             <MenuItem name="logout" to="/logout">退出登录</MenuItem>
+             <MenuItem name="info" to="/info"><Icon type="md-person" />基本信息</MenuItem>
+             <MenuItem name="myNotice" to="/myNotice"><Icon type="md-notifications" /><Badge dot :count="count">我的消息</Badge></MenuItem>
+             <MenuItem name="myArticle" to="/myArticle"><Icon type="ios-paper" />我的文章</MenuItem>
+             <MenuItem name="follow" to="/myFollow"><Icon type="md-heart" />我的收藏</MenuItem>
+             <MenuItem name="star" to="/myStar"><Icon type="md-thumbs-up" />我赞过的</MenuItem>
+             <MenuItem name="view" to="/myView"><Icon type="md-eye" />浏览历史</MenuItem>
+             <MenuItem name="logout" to="/logout"><Icon type="md-exit" />退出登录</MenuItem>
              <br/><br/><br/><br/><br/><br/><br/><br/>
            </Menu>
          </Sider>
@@ -51,32 +51,34 @@
              user:{
                id:'',
                name:'',
-               image:'https://i.loli.net/2017/08/21/599a521472424.jpg',
+               image:'',
                birthday:'',
                sex:'',
                email:'',
                phone:'',
                address:''
-             }
+             },
+             count:0,
           }
         },
        methods:{
           getUserById(id){
              if (id==null) return;
-             this.$axios.get(this.$USER_URL+"/user/"+id).then((resp)=>{
-                 this.user = resp.data
+             this.$axios.get(this.$BASE_URL+"/user/"+id).then((resp)=>{
+               this.user = resp.data
              })
           },
            //图片上传成功
            handleSuccess(response, file, fileList){
              this.user.image = response
-             this.$axios.put(this.$USER_URL+"/user",this.user).then(()=>{
+             this.$axios.put(this.$BASE_URL+"/user",this.user).then(()=>{
 
              })
            },
        },
        mounted() {
-          this.getUserById(sessionStorage.getItem("user"))
+         this.getUserById(sessionStorage.getItem("user"))
+          this.count = parseInt(localStorage.getItem("countNotice"))
        },
         watch:{
           $route(to,from){

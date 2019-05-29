@@ -60,7 +60,7 @@
           友情链接
         </p>
         <div style="text-align: left">
-          <a href="#">xxxxxxxxxxxxx</a><br/>
+          <a href="https://github.com/Hanyuhuang/blog">需要添加请联系</a><br/>
           <a href="#">xxxxxxxxxxxxx</a><br/>
           <a href="#">xxxxxxxxxxxxx</a><br/>
           <a href="#">xxxxxxxxxxxxx</a><br/>
@@ -93,7 +93,7 @@
         methods:{
           // 查询最新文章列表
            getArticleList(){
-              this.$axios.get(this.$ARTICLE_URL+"/article/list",{
+              this.$axios.get(this.$BASE_URL+"/article/list",{
                 params:{
                   pageCur:1,
                   pageSize:5,
@@ -101,14 +101,13 @@
               }).then((resp)=>{
                   this.recentArticles = resp.data.items
               })
-             this.$axios.get(this.$ARTICLE_URL+"/article/hot").then((resp)=>{
+             this.$axios.get(this.$BASE_URL+"/article/hot").then((resp)=>{
                 this.hotArticles = resp.data.items
              })
            },
             // 查看文章详情
             getArticleDetail(id){
-              this.$axios.post(this.$ARTICLE_URL+"/view/"+id).then(()=>{
-                  console.log(id)
+              this.$axios.post(this.$BASE_URL+"/article/view/"+id).then(()=>{
                   this.$router.push({
                     path:'/article/detail',
                     query:{

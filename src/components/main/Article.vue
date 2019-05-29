@@ -57,7 +57,7 @@
         methods:{
           // 查询最新文章列表
           getArticleList(){
-            this.$axios.get(this.$ARTICLE_URL+"/article/list",{
+            this.$axios.get(this.$BASE_URL+"/article/list",{
               params:{
                 pageCur:this.pageCur,
                 pageSize:this.pageSize,

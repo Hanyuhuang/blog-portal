@@ -172,7 +172,7 @@
         // 获取文章数据列表
         getArticleList(){
           this.loading = true;
-          this.$axios.get(this.$ARTICLE_URL+"/article/myArticle",{
+          this.$axios.get(this.$BASE_URL+"/article/myArticle",{
             params:{
               pageCur:this.pageCur,
               pageSize:this.pageSize,
@@ -186,7 +186,6 @@
             this.loading = false;
           }).catch((resp)=>{
             this.$Message.info("你的登录已过期，请重新登录！")
-            sessionStorage.removeItem("user")
             this.$router.push(this.$route.fullPath)
           })
         },
@@ -195,7 +194,7 @@
           this.article = {}
           this.isEdit = isEdit;
           if (isEdit){
-            this.$axios.get(this.$ARTICLE_URL+"/article/"+row.id).then((resp)=>{
+            this.$axios.get(this.$BASE_URL+"/article/"+row.id).then((resp)=>{
               this.article = resp.data;
               this.selectedList = resp.data.tag.split(",")
               console.log(resp.data)
@@ -223,7 +222,7 @@
               }
             })
           }
-          this.$axios.post(this.$ARTICLE_URL+"/article",this.article).then(()=>{
+          this.$axios.post(this.$BASE_URL+"/article",this.article).then(()=>{
             this.$Message.success("添加成功!");
             this.getArticleList();
             this.isShow = false;
@@ -233,7 +232,7 @@
         },
         // 修改文章
         edit() {
-          this.$axios.put(this.$ARTICLE_URL+"/article",this.article).then(()=>{
+          this.$axios.put(this.$BASE_URL+"/article",this.article).then(()=>{
             this.$Message.success("修改成功!");
             this.getArticleList();
             this.isShow = false;
@@ -246,7 +245,7 @@
           this.$Modal.confirm({
             title:'是否删除?',
             onOk:()=>{
-              this.$axios.delete(this.$ARTICLE_URL+"/article/"+this.article.id).then(()=>{
+              this.$axios.delete(this.$BASE_URL+"/article/"+this.article.id).then(()=>{
                 this.getArticleList();
                 this.$Message.success("删除成功!");
               }).catch(()=>{
@@ -272,7 +271,7 @@
                   ids.push(item.id)
                 })
                 // 发起删除请求
-                this.$axios.delete(this.$ARTICLE_URL+"/view",{
+                this.$axios.delete(this.$BASE_URL+"/article/view",{
                   params:{
                     ids:ids
                   },
@@ -317,7 +316,7 @@
           const formdata = new FormData();
           formdata.append('file', file);
           this.$axios({
-            url: 'http://localhost:8091/upload/image',
+            url: this.$BASE_URL+"/upload/image",
             method: 'post',
             data: formdata,
             headers: { 'Content-Type': 'multipart/form-data' },

@@ -128,7 +128,7 @@
             // 查询文章详情
             getArticleDetail(id){
                if(id==null || id=='') return;
-               this.$axios.get(this.$ARTICLE_URL+"/article/detail/"+id).then((resp)=>{
+               this.$axios.get(this.$BASE_URL+"/article/detail/"+id).then((resp)=>{
                  this.articleDetail = resp.data;
                  this.articleDetail.tags = resp.data.article.tag.split(",")
                }).catch(()=>{
@@ -147,7 +147,7 @@
             addComment(){
                this.commentVo.comment.articleId = this.articleDetail.article.id
                this.commentVo.user.id = this.articleDetail.user.id
-               this.$axios.post(this.$ARTICLE_URL+"/comment",this.commentVo).then(()=>{
+               this.$axios.post(this.$BASE_URL+"/article/comment",this.commentVo).then(()=>{
                   this.$Message.success("评论成功")
                   this.content = ''
                   this.getArticleDetail(this.$route.query.id)
@@ -165,7 +165,7 @@
                this.reply.articleId = this.articleDetail.article.id
                this.reply.commentId = commentId
                console.log(this.reply)
-               this.$axios.post(this.$ARTICLE_URL+"/reply",this.reply).then(()=>{
+               this.$axios.post(this.$BASE_URL+"/article/reply",this.reply).then(()=>{
                   this.$Message.success("回复成功")
                   this.reply = {}
                   this.getArticleDetail(this.$route.query.id)
@@ -176,7 +176,7 @@
             star(){
                // 取消点赞
                if (this.articleDetail.star){
-                  this.$axios.delete(this.$ARTICLE_URL+"/star/"+this.articleDetail.article.id).then(()=>{
+                  this.$axios.delete(this.$BASE_URL+"/article/star/"+this.articleDetail.article.id).then(()=>{
                     this.getArticleDetail(this.$route.query.id)
                   })
                  // 点赞
@@ -189,7 +189,7 @@
                  const starVo = {star:{},user:{}}
                  starVo.star.articleId = this.articleDetail.article.id
                  starVo.user.id = this.articleDetail.user.id
-                 this.$axios.post(this.$ARTICLE_URL+"/star",starVo).then(()=>{
+                 this.$axios.post(this.$BASE_URL+"/article/star",starVo).then(()=>{
                    this.getArticleDetail(this.$route.query.id)
                  }).catch(()=>{
                    this.$Message.error("登录后再操作")
@@ -199,7 +199,7 @@
             follow(){
               // 取消收藏
               if (this.articleDetail.follow){
-                this.$axios.delete(this.$ARTICLE_URL+"/follow/"+this.articleDetail.article.id).then(()=>{
+                this.$axios.delete(this.$BASE_URL+"/article/follow/"+this.articleDetail.article.id).then(()=>{
                   this.getArticleDetail(this.$route.query.id)
                 })
                 // 收藏
@@ -214,7 +214,7 @@
                 const followVo = {follow:{},user:{}}
                 followVo.follow.articleId = this.articleDetail.article.id
                 followVo.user.id = this.articleDetail.user.id
-                this.$axios.post(this.$ARTICLE_URL+"/follow",followVo).then(()=>{
+                this.$axios.post(this.$BASE_URL+"/article/follow",followVo).then(()=>{
                   this.getArticleDetail(this.$route.query.id)
                 }).catch(()=>{
                   this.$Message.error("发生了未知的异常")

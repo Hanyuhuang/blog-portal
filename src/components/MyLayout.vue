@@ -17,11 +17,13 @@
          <Col span="3" >
            <MenuItem name="contact" to="/contact" style="font-size: large;">联系我们</MenuItem>
          </Col>
+         <!--搜索框-->
          <Col span="3">
-           <Input size="large" search placeholder="搜索文章" style="border-radius:10px"></Input>
+           <Input size="large" search placeholder="搜索文章" style="border-radius:10px" @on-search="search"></Input>
          </Col>
+         <!--登录、注册、个人中心-->
          <Col span="3" offset="1">
-           <Button v-if="this.$user!=null" type="text" to="/info" style="color: coral;font-size: larger">个人中心</Button>
+           <Button v-if="this.$user!=null" type="text" to="/info" style="color: coral;font-size: larger"><Badge dot :count="count">个人中心</Badge></Button>
            <Button v-if="this.$user==null" type="primary" shape="circle" ghost style="font-size:15px;" @click="showForm(true)">登录</Button>
            <Button v-if="this.$user==null" type="warning" shape="circle" ghost style="font-size: 15px;" @click="showForm(false)">注册</Button>
          </Col>
@@ -102,6 +104,7 @@
             code:'',
             btnClickable:true,
             btnText:'获取验证码',
+            count:0,
           }
         },
         methods:{
@@ -118,7 +121,7 @@
             // 验证邮箱是否存在
             if(this.checkEmailIsValid()) return;
             // 发送验证码
-            this.$axios.get(this.$USER_URL+"/user/code",{params:{email:this.user.email}}).then(()=>{
+            this.$axios.get(this.$BASE_URL+"/user/code",{params:{email:this.user.email}}).then(()=>{
               this.$Message.success("发送成功,注意查收!")
             }).catch(()=>{this.$Message.error("发送失败!")})
             // 验证码倒计时
@@ -147,7 +150,7 @@
               this.$Message.error("邮箱格式错误!")
               return;
             }
-            this.$axios.get(this.$USER_URL+"/user/email/"+this.user.email).then(()=>{
+            this.$axios.get(this.$BASE_URL+"/user/email/"+this.user.email).then(()=>{
                 return true;
             }).catch(()=>{
                this.$Message.error("该邮箱已存在")
@@ -161,7 +164,7 @@
               this.$Message.error("手机格式错误!")
               return false;
             }
-            this.$axios.get(this.$USER_URL+"/user/phone/"+this.user.phone).then(()=>{
+            this.$axios.get(this.$BASE_URL+"/user/phone/"+this.user.phone).then(()=>{
               return true;
             }).catch(()=>{
               this.$Message.error("该手机已存在")
@@ -172,7 +175,7 @@
             // 验证 邮箱 手机
              if (this.checkEmailIsValid() || this.checkPhoneIsValid())  return;
             // 注册
-              this.$axios.post(this.$USER_URL+"/user",{user:this.user,code:this.code}).then(()=>{
+              this.$axios.post(this.$BASE_URL+"/user",{user:this.user,code:this.code}).then(()=>{
                 this.$Message.success('注册成功!');
                 this.isShow = false;
                 this.user={};
@@ -186,13 +189,14 @@
           },
           // 登录
           login(){
-            this.$axios.get(this.$USER_URL+"/user/login",{
+            this.$axios.get(this.$BASE_URL+"/user/login",{
                 params:{
                   loginName:this.user.loginName,
                   password:this.user.password
                 }
               }).then((resp)=>{
               this.$Message.success("登录成功!")
+              this.countNotice()
               this.$user = resp.data.id
               sessionStorage.setItem("user",resp.data.id)
               this.isShow = false;
@@ -201,9 +205,21 @@
               this.$Message.error("用户名或密码错误!")
             })
           },
+          // 搜索
+          search(){
+            this.$Message.info("该功能暂未实现，敬请期待~~")
+          },
+          // 查询是否有未读消息
+          countNotice(){
+             this.$axios.get(this.$BASE_URL+"/article/notice/count").then((resp)=>{
+                console.log(resp.data)
+                localStorage.setItem("countNotice",resp.data)
+                this.count = resp.data
+             })
+          },
           // websocket
           connect(id){
-            const socket = new WebSocket(this.$WEBSOCKET_URL+id)
+            const socket = new WebSocket("ws://localhost:8092/websocket/"+id)
             socket.onopen = this.onOpen
             socket.onclose = this.onClose
             socket.onmessage = this.onMessage
@@ -213,7 +229,7 @@
           onClose(){console.log("关闭连接")},
           onError(){console.log("发生异常")},
           onMessage(resp){
-            console.log(resp)
+            this.countNotice()
             this.$Notice.info({
               title:'你有一条新的消息，注意查收',
               desc:resp.data
@@ -225,6 +241,14 @@
             const path = to.path.split("/")
             this.activeName = path[1]
           },
+      },
+      mounted() {
+          this.count = parseInt(localStorage.getItem("countNotice"))
+      },
+      created() {
+          if (sessionStorage.getItem("user")!=null){
+            this.connect(sessionStorage.getItem("user"))
+          }
       }
     }
 </script>

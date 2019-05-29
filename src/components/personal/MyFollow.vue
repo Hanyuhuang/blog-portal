@@ -109,7 +109,7 @@
         // 获取文章数据列表
         getArticleList(){
           this.loading = true;
-          this.$axios.get(this.$ARTICLE_URL+"/follow/list",{
+          this.$axios.get(this.$BASE_URL+"/article/follow/list",{
             params:{
               pageCur:this.pageCur,
               pageSize:this.pageSize,
@@ -120,7 +120,6 @@
 
           }).catch(()=>{
             this.$Message.info("你的登录已过期，请重新登录！")
-            sessionStorage.removeItem("user")
             this.$router.push(this.$route.fullPath)
           })
           this.loading = false;
@@ -139,7 +138,7 @@
           this.$Modal.confirm({
             title:'是否删除?',
             onOk:()=>{
-              this.$axios.delete(this.$ARTICLE_URL+"/follow",{params:{articleId:row.article.id}}).then(()=>{
+              this.$axios.delete(this.$BASE_URL+"/article/follow",{params:{articleId:row.article.id}}).then(()=>{
                 this.getArticleList();
                 this.$Message.success("删除成功!");
               }).catch(()=>{
@@ -165,7 +164,7 @@
                   ids.push(item.article.id)
                 })
                 // 发起删除请求
-                this.$axios.delete(this.$ARTICLE_URL+"/follow",{
+                this.$axios.delete(this.$BASE_URL+"/article/follow",{
                   params:{
                     ids:ids
                   },
