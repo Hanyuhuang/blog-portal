@@ -21,16 +21,16 @@
              <MenuItem name="info" to="/info"><Icon type="md-person" />基本信息</MenuItem>
              <MenuItem name="myNotice" to="/myNotice"><Icon type="md-notifications" /><Badge dot :count="count">我的消息</Badge></MenuItem>
              <MenuItem name="myArticle" to="/myArticle"><Icon type="ios-paper" />我的文章</MenuItem>
-             <MenuItem name="follow" to="/myFollow"><Icon type="md-heart" />我的收藏</MenuItem>
-             <MenuItem name="star" to="/myStar"><Icon type="md-thumbs-up" />我赞过的</MenuItem>
-             <MenuItem name="view" to="/myView"><Icon type="md-eye" />浏览历史</MenuItem>
+             <MenuItem name="myFollow" to="/myFollow"><Icon type="md-heart" />我的收藏</MenuItem>
+             <MenuItem name="myStar" to="/myStar"><Icon type="md-thumbs-up" />我赞过的</MenuItem>
+             <MenuItem name="myView" to="/myView"><Icon type="md-eye" />浏览历史</MenuItem>
              <MenuItem name="logout" to="/logout"><Icon type="md-exit" />退出登录</MenuItem>
              <br/><br/><br/><br/><br/><br/><br/><br/>
            </Menu>
          </Sider>
          <!--主要部分-->
            <Content style="margin-left: 50px">
-             <Card style="height: 660px">
+             <Card :dis-hover="true" style="height: 669px">
                <router-view></router-view>
              </Card>
            </Content>

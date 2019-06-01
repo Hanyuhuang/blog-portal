@@ -1,22 +1,29 @@
 <template>
-  <div>
-    <Row>
-      <Col span="8">
-        <Button size="large" @click="removeAll">批量删除</Button>
-        <Button type="success"size="large" @click="showForm(false)">写文章</Button>
-      </Col>
-      <Col span="6" offset="8">
-        <Input search size="large" placeholder="输入搜索内容" model="keywords">{{keywords}}</Input>
-      </Col>
-    </Row>
-    <br>
-    <Table border ref="selection" :loading="loading" :columns="cols" :data="articleList" @on-selection-change="selected">
-      <template slot-scope="{ row, index }" slot="action">
-        <Button type="primary" size="small" @click="showForm(true,row)">修改</Button>
-        <Button type="error" size="small" @click="remove(row)">删除</Button>
-      </template>
-    </Table>
-    <br>
+  <div style="margin-left: 10px">
+    <span style="font-size: 30px;margin-left: 10px">我的文章</span>
+    <Button type="warning" size="large" @click="showForm(false)" style="float: right;margin-right: 20px">
+      <Icon type="ios-paper-plane" />
+      写文章
+    </Button><br><hr>
+    <div v-for="article in articleList">
+      <Card :dis-hover="true">
+        <Button type="text"
+                @click="getArticleDetail(article.id)"
+                style="font-size: larger;color: #4a4a4a;font-weight: bold;letter-spacing:5px">
+          {{article.title}}
+        </Button>
+        <a @click="remove(article.id)" style="color: red;float: right">删除</a>
+        <a @click="showForm(true,article.id)" style="float: right;margin-right: 10px">编辑</a>
+        <div>
+          <p style="margin-left: 20px">{{toText(article.content)}}</p>
+          <p >
+            <span style="float: right">发表时间:{{dateFormat(article.createTime)}}</span>
+          </p>
+        </div>
+        <br/>
+      </Card>
+    </div>
+    <br/>
     <!--分页-->
     <Page :total="total"
           :page-size="pageSize"
@@ -47,7 +54,7 @@
               </Select>
             </FormItem>
             <FormItem label="文章图片">
-              <img v-if="article.image.length>1" :src="article.image" style="height: 60px;width: 60px;margin-left: 20px">
+              <img :src="article.image" style="height: 60px;width: 60px;margin-left: 20px">
               <Upload
                 :format="['jpg','jpeg','png']"
                 :max-size="2048*5"
@@ -99,73 +106,10 @@
             mdContent:'',
             tag:'',
             createTime:'',
-            userId:'',
-            views:[],
-            follows:[],
-            stars:[],
+            user:{}
           },
           articleList:[],
-          tagList:[{label:'Java',value:'Java'},{label:'C++',value:'C++'},{label:'Python',value:'Python'},],
-          cols:[
-            {
-              type: 'selection',
-              align: 'center',
-              width:50
-            },
-            {
-              title:'Id',
-              key:'id',
-              sortable: true,
-              align: 'center',
-              width:50
-            },
-            {
-              title:'标题',
-              key:'title',
-              tooltip:true,
-              align: 'center'
-            },
-            {
-              title:'配图',
-              key:'image',
-              align: 'center',
-              render:(h,params)=>{
-                return h('img',{attrs:{src:params.row.image,height:60,width:60}})
-              }
-            },
-            {
-              title:'内容',
-              key:'content',
-              tooltip:true,
-              align: 'center',
-              render: (h,params)=>{
-                function toText(HTML) {
-                  const value = HTML
-                  return value.replace(/<(style|script|iframe)[^>]*?>[\s\S]+?<\/\1\s*>/gi, '').replace(/<[^>]+?>/g, '').replace(/\s+/g, ' ').replace(/ /g, ' ').replace(/>/g, ' ');
-                }
-                return h('div', toText(params.row.content))
-              }
-            },
-            {
-              title:'发表时间',
-              key:'createTime',
-              sortable:true,
-              tooltip:true,
-              render: (h,params)=>{
-                return h('div',
-                  formatDate(new Date(params.row.createTime),'yyyy-MM-dd hh:mm:ss')
-                  //'yyyy-MM-dd hh:mm' 对应的时间格式2018-12-21 ：18：46
-                  //格式可以自行修改，例如 'yyyy-MM-dd' 'yyyy-MM'
-                  //Date是后台时间戳参数名字
-                )
-              }
-            },
-            {
-              title: '操作',
-              slot: 'action',
-              align: 'center'
-            }
-          ],
+          tagList:[{label:'Java',value:'Java'},{label:'C++',value:'C++'},{label:'Python',value:'Python'},{label:'MySql',value:'MySql'},{label:'计算机网络',value:'计算机网络'},{label:'操作系统',value:'操作系统'},],
         }
       },
       methods:{
@@ -185,19 +129,17 @@
             this.articleList = resp.data.items
             this.loading = false;
           }).catch((resp)=>{
-            this.$Message.info("你的登录已过期，请重新登录！")
-            this.$router.push(this.$route.fullPath)
+
           })
         },
         // 显示表单
-        showForm(isEdit,row){
+        showForm(isEdit,id){
           this.article = {}
           this.isEdit = isEdit;
           if (isEdit){
-            this.$axios.get(this.$BASE_URL+"/article/"+row.id).then((resp)=>{
+            this.$axios.get(this.$BASE_URL+"/article/"+id).then((resp)=>{
               this.article = resp.data;
               this.selectedList = resp.data.tag.split(",")
-              console.log(resp.data)
             })
           }
           this.isShow = true;
@@ -240,12 +182,21 @@
             this.$Message.error("修改失败!");
           })
         },
-        // 删除用户
-        remove() {
+        // 显示HTML代码的文本内容
+        toText(HTML) {
+          const value = HTML
+          return value.replace(/<(style|script|iframe)[^>]*?>[\s\S]+?<\/\1\s*>/gi, '').replace(/<[^>]+?>/g, '').replace(/\s+/g, ' ').replace(/ /g, ' ').replace(/>/g, ' ');
+        },
+        // 时间处理
+        dateFormat(date){
+          return  formatDate(new Date(date),'yyyy-MM-dd hh:mm:ss')
+        },
+        // 删除文章
+        remove(id) {
           this.$Modal.confirm({
             title:'是否删除?',
             onOk:()=>{
-              this.$axios.delete(this.$BASE_URL+"/article/"+this.article.id).then(()=>{
+              this.$axios.delete(this.$BASE_URL+"/article/"+id).then(()=>{
                 this.getArticleList();
                 this.$Message.success("删除成功!");
               }).catch(()=>{
@@ -253,44 +204,6 @@
               })
             }
           });
-        },
-        // 多选框选中事件
-        selected(row){
-          this.selectedList = row;
-        },
-        // 批量删除
-        removeAll(){
-          // 判断是否选中
-          if (this.selectedList.length>0){
-            // 确认框
-            this.$Modal.confirm({
-              title:'是否删除?',
-              onOk:()=>{
-                const ids = [];
-                this.selectedList.some((item)=>{
-                  ids.push(item.id)
-                })
-                // 发起删除请求
-                this.$axios.delete(this.$BASE_URL+"/article/view",{
-                  params:{
-                    ids:ids
-                  },
-                  paramsSerializer: params => {
-                    return this.$qs.stringify(params, { indices: false })
-                  }
-                  // 请求成功
-                }).then(()=>{
-                  this.getArticleList()
-                  this.$Message.success("删除成功!")
-                  // 请求失败
-                }).catch(()=>{
-                  this.$Message.error("删除失败!")
-                })
-              }
-            })
-          }else {
-            this.$Message.info("请选择一行再删除!");
-          }
         },
         // 换页
         changePage(page){

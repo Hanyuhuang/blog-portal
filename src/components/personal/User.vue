@@ -40,13 +40,13 @@
           <FormItem label="原手机" >
             <Input disabled v-model="user.phone" style="width: 170px"></Input>
           </FormItem>
-          <FormItem v-if="isEdit" label="验证码">
-            <Input v-model="code" style="width: 100px"></Input>
-            <Button v-if="isEdit" :disabled="!btnClickable" @click="sendCode">{{btnText}}</Button>
-          </FormItem>
           <FormItem v-if="isEdit" label="新手机" >
-            <Input :disabled="!isEdit" type="email" v-model="user.newPhone" style="width: 170px"></Input>
+            <Input :disabled="!isEdit" v-model="user.newPhone" style="width: 170px"></Input>
           </FormItem>
+<!--          <FormItem v-if="isEdit" label="验证码">
+            <Input disabled v-model="" style="width: 100px"></Input>
+            <Button v-if="isEdit" disabled>验证码</Button>
+          </FormItem>-->
           <FormItem v-if="isEdit">
             <Button type="success" @click="updatePhone">修改手机</Button>
           </FormItem>
@@ -54,12 +54,12 @@
           <FormItem label="原邮箱" >
             <Input disabled type="email" v-model="user.email" style="width: 170px"></Input>
           </FormItem>
-          <FormItem v-if="isEdit" label="验证码">
-            <Input v-model="code" style="width: 100px"></Input>
-            <Button v-if="isEdit" :disabled="!btnClickable" @click="sendCode">{{btnText}}</Button>
-          </FormItem>
           <FormItem v-if="isEdit" label="新邮箱" >
             <Input :disabled="!isEdit" type="email" v-model="user.newEmail" style="width: 170px"></Input>
+          </FormItem>
+          <FormItem v-if="isEdit" label="验证码">
+            <Input v-model="user.code" style="width: 100px"></Input>
+            <Button v-if="isEdit" :disabled="!btnClickable" @click="sendCode">{{btnText}}</Button>
           </FormItem>
           <FormItem v-if="isEdit">
             <Button type="success" @click="updateEmail">修改邮箱</Button>
@@ -89,33 +89,33 @@
               email:'',
               newEmail:'',
               address:'',
+              code:'',
             },
             isEdit:false,
             selectedCity:[],
             btnClickable:true,
             btnText:'验证码',
-            code:'',
           }
         },
         methods:{
           // 查询用户信息
-          getUser(id){
-            if (id==null) return;
-            this.$axios.get(this.$BASE_URL+"/user/"+id).then((resp)=>{
+          getUser(){
+            this.$axios.get(this.$BASE_URL+"/user/"+this.user.id).then((resp)=>{
                  this.user = resp.data;
                  this.user.birthday = formatDate(new Date(resp.data.birthday),'yyyy-MM-dd')
-                 this.selectedCity = resp.data.address.split("-")
+                 if (resp.data.address!=null){
+                   this.selectedCity = resp.data.address.split("-")
+                 }
              }).catch(()=>{
               this.$Message.info("你的登录已过期，请重新登录！")
-              this.$router.push(this.$route.fullPath)
             })
           },
           // 发送验证码
           sendCode(){
             // 验证邮箱
-            if(this.checkEmailIsValid()) return;
+            if(!this.checkEmailIsValid()) return;
             // 发送验证码
-            this.$axios.get(this.$BASE_URL+"/user/code",{params:{email:this.user.email}}).then(()=>{
+            this.$axios.get(this.$BASE_URL+"/user/code",{params:{email:this.user.newEmail}}).then(()=>{
               this.$Message.success("发送成功,注意查收!")
             }).catch(()=>{this.$Message.error("发送失败!")})
             // 验证码倒计时
@@ -136,49 +136,25 @@
               },1000)
             }
           },
-          // 验证邮箱是否合法和存在
+          // 验证邮箱是否合法
           checkEmailIsValid(){
             const reg = new RegExp("^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$"); //正则表达式
             // 验证邮箱格式
             if (!reg.test(this.user.newEmail)) {
               this.$Message.error("邮箱格式错误!")
-              return;
+              return false
+            } else {
+              return true
             }
-            this.$axios.get(this.$BASE_URL+"/user/email/"+this.user.newEmail).then(()=>{
-              return true;
-            }).catch(()=>{
-              this.$Message.error("该邮箱已存在")
-              return false;
-            })
           },
-          // 验证手机是否合法和存在
+          // 验证手机是否合法
           checkPhoneIsValid(){
-            const reg = new RegExp("/^1(3|4|5|7|8)\\d{9}$/");
-            if(reg.test(this.user.phone)){
+            if(!(/^1[34578]\d{9}$/.test(this.user.newPhone))){
               this.$Message.error("手机格式错误!")
-              return false;
+              return false
+            }else {
+              return true
             }
-            this.$axios.get(this.$BASE_URL+"/user/phone/"+this.user.phone).then(()=>{
-              return true;
-            }).catch(()=>{
-              this.$Message.error("该手机已存在")
-              return false;
-            })
-          },
-          handleSubmit (name) {
-            //  地址处理
-            this.user.address = this.selectedCity[0]+"-"+this.selectedCity[1]+"-"+this.selectedCity[2]+"-"+this.selectedCity[3];
-            // 验证 邮箱 手机
-            if (this.checkEmailIsValid() || this.checkPhoneIsValid())  return;
-            // 注册
-            this.$axios.put(this.$BASE_URL+"/user",{user:this.user,code:this.code}).then(()=>{
-              this.$Message.success('修改成功!');
-              this.isShow = false;
-              this.isLoginEd = true;
-              this.user={};
-            }).catch(()=>{
-              this.$Message.error('修改失败!');
-            })
           },
           // 修改状态为编辑
           edit(){
@@ -187,32 +163,59 @@
           // 修改密码
           updatePassword(){
             this.$axios.put(this.$BASE_URL+"/user/password",this.user).then((resp)=>{
+              if (resp.data==0){
+                this.$Message.error("修改失败!密码错误!")
+              } else {
                 this.$Message.success("修改成功!")
-                setInterval(()=>{window.location.reload()},500)
+                this.getUser()
+                this.user.newPassword = null
+              }
             }).catch(()=>{
-                this.$Message.error("修改失败!检查密码是否正确!")
+                this.$Message.error("发生了未知的错误!")
             })
           },
           // 修改邮箱
           updateEmail(){
-            // 验证邮箱
-            if(this.checkEmailIsValid()) return;
-            this.$axios.put(this.$BASE_URL+"/user",this.user).then((resp)=>{
-              this.$Message.success("修改成功!")
-            }).catch(()=>{
-              this.$Message.error("修改失败!邮箱不存在或邮箱已被使用!")
+            // 验证邮箱格式
+            if(!this.checkEmailIsValid()) return;
+            // 验证邮箱是否存在
+            this.$axios.get(this.$BASE_URL+"/user/email/"+this.user.newEmail).then((resp)=>{
+              if (resp.data==1){
+                this.$Message.error("该邮箱已存在！")
+              } else {
+                // 修改邮箱
+                this.$axios.put(this.$BASE_URL+"/user/email",this.user).then((resp)=>{
+                  this.getUser()
+                  this.user.newEmail = null
+                  this.$Message.success("修改成功!")
+                }).catch((resp)=>{
+                  console.log(resp)
+                  this.$Message.error("修改失败！！！！!")
+                })
+              }
             })
           },
           // 修改手机
           updatePhone(){
-            // 验证邮箱
-            if(this.checkPhoneIsValid()) return;
-            this.$axios.put(this.$BASE_URL+"/user",this.user).then((resp)=>{
-              this.$Message.success("修改成功!")
-            }).catch(()=>{
-              this.$Message.error("修改失败!手机号不存在或已被使用!")
+            // 验证手机
+            if(!this.checkPhoneIsValid()) return
+            // 验证手机是否存在
+            this.$axios.get(this.$BASE_URL+"/user/phone/"+this.user.newPhone).then((resp)=>{
+              if (resp.data==1){
+                this.$Message.error("该手机已存在!")
+              } else {
+                // 修改
+                this.$axios.put(this.$BASE_URL+"/user/phone",this.user).then((resp)=>{
+                  this.getUser()
+                  this.user.newPhone = null
+                  this.$Message.success("修改成功!")
+                }).catch(()=>{
+                  this.$Message.error("修改失败!")
+                })
+              }
             })
           },
+          // 修改基本信息
           save(){
             //  地址处理
             this.user.address = this.selectedCity[0]+"-"+this.selectedCity[1]+"-"+this.selectedCity[2]+"-"+this.selectedCity[3];
@@ -220,14 +223,14 @@
             this.$axios.put(this.$BASE_URL+"/user",this.user).then((resp)=>{
               this.getUser()
               this.$Message.success("修改成功!")
-              this.isEdit = false;
             }).catch(()=>{
               this.$Message.error("修改失败!")
             })
           },
         },
         mounted() {
-          this.getUser(sessionStorage.getItem("user"));
+          this.user.id = sessionStorage.getItem("user")
+          this.getUser()
         }
     }
 </script>

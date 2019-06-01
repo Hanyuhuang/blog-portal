@@ -107,15 +107,11 @@
            },
             // 查看文章详情
             getArticleDetail(id){
-              this.$axios.post(this.$BASE_URL+"/article/view/"+id).then(()=>{
-                  this.$router.push({
-                    path:'/article/detail',
-                    query:{
-                      id:id
-                    }
-                  })
-              }).catch(()=>{
-                  this.$Message.error("发生了未知的错误！")
+              this.$router.push({
+                path:'/article/detail',
+                query:{
+                  id:id
+                }
               })
             },
           // 显示HTML代码的文本内容

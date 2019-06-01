@@ -1,19 +1,27 @@
 <template>
-  <div>
-    <Row>
-      <Col span="8">
-        <Button size="large" @click="removeSome">批量删除</Button>
-        <Button type="success"size="large" @click="removeAll">清空全部</Button>
-      </Col>
-    </Row>
-    <br>
-    <Table border ref="selection" :loading="loading" :columns="cols" :data="articleList" @on-selection-change="selected">
-      <template slot-scope="{ row, index }" slot="action">
-        <Button type="primary" size="small" @click="getArticleDetail(row)">查看</Button>
-        <Button type="error" size="small" @click="remove(row)">删除</Button>
-      </template>
-    </Table>
-    <br>
+  <div style="margin-left: 10px">
+    <span style="font-size: 30px;margin-left: 10px">我浏览的文章数 ({{total}})</span>
+    <Button type="error" size="large" @click="removeAll" style="float: right">清空浏览记录</Button>
+    <br><hr>
+    <div v-for="item in articleList">
+      <Card :dis-hover="true">
+        <Button type="text"
+                @click="getArticleDetail(item.article.id)"
+                style="font-size: larger;color: #4a4a4a;font-weight: bold;letter-spacing:5px">
+          {{item.article.title}}
+        </Button>
+        <a @click="remove(item.article.id)" style="color: red;float: right">删除记录</a>
+        <div>
+          <p style="margin-left: 20px">{{toText(item.article.content)}}</p>
+          <p >
+            <!--<span style="margin-left: 20px">作者:{{item.user.name}}</span>-->
+            <span style="float: right">发表时间:{{dateFormat(item.article.createTime)}}</span>
+          </p>
+        </div>
+        <br/>
+      </Card>
+    </div>
+    <br/>
     <!--分页-->
     <Page :total="total"
           :page-size="pageSize"
@@ -42,68 +50,6 @@
             user:{name:''}
           },
           articleList:[],
-          cols:[
-            {
-              type: 'selection',
-              align: 'center',
-              width:50
-            },
-            {
-              title:'#',
-              align: 'center',
-              width:50,
-              render: (h,params)=>{
-                return h('div', params.row.article.id)
-              }
-            },
-            {
-              title:'标题',
-              tooltip:true,
-              align: 'center',
-              render: (h,params)=>{
-                return h('div', params.row.article.title)
-              }
-            },
-            {
-              title:'作者',
-              tooltip:true,
-              align: 'center',
-              render: (h,params)=>{
-                return h('div', params.row.user.name)
-              }
-            },
-            {
-
-              title:'内容',
-              tooltip:true,
-              align: 'center',
-              render: (h,params)=>{
-                function toText(HTML) {
-                  const value = HTML
-                  return value.replace(/<(style|script|iframe)[^>]*?>[\s\S]+?<\/\1\s*>/gi, '').replace(/<[^>]+?>/g, '').replace(/\s+/g, ' ').replace(/ /g, ' ').replace(/>/g, ' ');
-                }
-                return h('div', toText(params.row.article.content))
-              }
-            },
-            {
-              title:'发表时间',
-              tooltip:true,
-              width:100,
-              render: (h,params)=>{
-                return h('div',
-                  formatDate(new Date(params.row.article.createTime),'yyyy-MM-dd hh:mm')
-                  //'yyyy-MM-dd hh:mm' 对应的时间格式2018-12-21 ：18：46
-                  //格式可以自行修改，例如 'yyyy-MM-dd' 'yyyy-MM'
-                  //Date是后台时间戳参数名字
-                )
-              }
-            },
-            {
-              title: '操作',
-              slot: 'action',
-              align: 'center'
-            }
-          ],
         }
       },
       methods:{
@@ -118,7 +64,6 @@
           }).then((resp)=>{
             this.total = resp.data.total
             this.articleList = resp.data.items
-
           }).catch(()=>{
             this.$Message.info("你的登录已过期，请重新登录！")
             this.$router.push(this.$route.fullPath)
@@ -126,62 +71,27 @@
           this.loading = false;
         },
         // 查看文章详情
-        getArticleDetail(row){
+        getArticleDetail(id){
           this.$router.push({
             path:'/article/detail',
             query:{
-              id:row.id
+              id:id
             }
           })
         },
         // 删除记录
-        remove(row) {
+        remove(id) {
           this.$Modal.confirm({
-            title:'是否删除?',
+            title:'是否删除该记录?',
             onOk:()=>{
-              this.$axios.delete(this.$BASE_URL+"/article/view/"+row.article.id).then(()=>{
+              this.$axios.delete(this.$BASE_URL+"/article/view/"+id).then(()=>{
                 this.getArticleList();
-                this.$Message.success("删除成功!");
+                this.$Message.success("操作成功!");
               }).catch(()=>{
-                this.$Message.error("删除失败!");
+                this.$Message.error("操作失败!");
               })
             }
           })
-        },
-        // 多选框选中事件
-        selected(row){
-          this.selectedList = row;
-        },
-        // 批量删除
-        removeSome(){
-          // 判断是否选中
-          if (this.selectedList.length>0){
-            // 确认框
-            this.$Modal.confirm({
-              title:'是否删除?',
-              onOk:()=>{
-                const ids = [];
-                this.selectedList.some((item)=>{
-                  ids.push(item.article.id)
-                })
-                // 发起删除请求
-                this.$axios.delete(this.$BASE_URL+"/view", {
-                  params:{ids:ids},
-                  paramsSerializer: params => {
-                    return this.$qs.stringify(params, { indices: false })
-                  }
-                }).then((resp)=>{
-                  this.getArticleList()
-                  this.$Message.success("共删除"+resp.data+"条记录！")
-                  // 请求失败
-                }).catch(()=>{
-                  this.$Message.error("删除失败!")
-                })
-              }
-            })
-          }else {
-            this.$Message.info("请选择一行再删除!");
-          }
         },
         // 全部删除
         removeAll(){
@@ -201,6 +111,15 @@
         changePage(page){
           this.pageCur = page;
           this.getArticleList();
+        },
+        // 显示HTML代码的文本内容
+        toText(HTML) {
+          const value = HTML
+          return value.replace(/<(style|script|iframe)[^>]*?>[\s\S]+?<\/\1\s*>/gi, '').replace(/<[^>]+?>/g, '').replace(/\s+/g, ' ').replace(/ /g, ' ').replace(/>/g, ' ');
+        },
+        // 时间处理
+        dateFormat(date){
+          return  formatDate(new Date(date),'yyyy-MM-dd hh:mm:ss')
         },
       },
       mounted() {

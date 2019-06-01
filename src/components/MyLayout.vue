@@ -148,34 +148,39 @@
             // 验证邮箱格式
             if (!reg.test(this.user.email)) {
               this.$Message.error("邮箱格式错误!")
-              return;
+              return false
+            } else {
+              return true
             }
-            this.$axios.get(this.$BASE_URL+"/user/email/"+this.user.email).then(()=>{
-                return true;
-            }).catch(()=>{
-               this.$Message.error("该邮箱已存在")
-               return false;
-            })
+
           },
           // 验证手机是否合法和存在
           checkPhoneIsValid(){
-            const reg = new RegExp("/^1(3|4|5|7|8)\\d{9}$/");
-            if(reg.test(this.user.phone)){
+            if(!(/^1[34578]\d{9}$/.test(this.user.newPhone))){
               this.$Message.error("手机格式错误!")
-              return false;
+              return false
+            }else {
+              return true
             }
-            this.$axios.get(this.$BASE_URL+"/user/phone/"+this.user.phone).then(()=>{
-              return true;
-            }).catch(()=>{
-              this.$Message.error("该手机已存在")
-              return false;
-            })
           },
+          // 注册
           handleSubmit (name) {
             // 验证 邮箱 手机
-             if (this.checkEmailIsValid() || this.checkPhoneIsValid())  return;
+             if (!this.checkEmailIsValid() || !this.checkPhoneIsValid())  return;
+            this.$axios.get(this.$BASE_URL+"/user/email/"+this.user.email).then((resp)=>{
+              if (resp.data==1){
+                this.$Message.error("该邮箱已存在!")
+                return
+              }
+            })
+            this.$axios.get(this.$BASE_URL+"/user/phone/"+this.user.phone).then((resp)=>{
+              if (resp.data==1){
+                this.$Message.error("该手机已存在!")
+                return
+              }
+            })
             // 注册
-              this.$axios.post(this.$BASE_URL+"/user",{user:this.user,code:this.code}).then(()=>{
+              this.$axios.post(this.$BASE_URL+"/user/register",{user:this.user,code:this.code}).then(()=>{
                 this.$Message.success('注册成功!');
                 this.isShow = false;
                 this.user={};
@@ -212,7 +217,6 @@
           // 查询是否有未读消息
           countNotice(){
              this.$axios.get(this.$BASE_URL+"/article/notice/count").then((resp)=>{
-                console.log(resp.data)
                 localStorage.setItem("countNotice",resp.data)
                 this.count = resp.data
              })

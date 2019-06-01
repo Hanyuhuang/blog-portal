@@ -51,7 +51,8 @@
            <!--评论时间-->
            <p style="color: #889097">
              <span>发表时间：{{dateFormat(item.comment.createTime)}}</span>
-             <a @click="showReplyBox(i)" style="float: right;margin-right: 50px">回复</a>
+             <a v-if="item.user.id==userId" @click="deleteComment(item.comment.id)" style="float: right;margin-right: 20px">删除</a>
+             <a @click="showReplyBox(i)" style="float: right;margin-right: 20px">回复</a>
            </p>
            <!--评论回复-->
            <div v-for="replyVo in item.replyList" style="background-color: #dfe7ee">
@@ -59,10 +60,10 @@
                <p style="color: green;margin-top: 10px">
                  {{replyVo.user.name}}&nbsp;
                  <Tag color="primary" >N</Tag>
+                 <a v-if="replyVo.user.id==userId" @click="deleteReply(replyVo.reply.id)" style="float: right;margin-right: 20px">删除</a>
                </p>
                <p >{{replyVo.reply.content}}</p>
                <p style="color: #889097">发表时间：{{dateFormat(replyVo.reply.createTime)}}</p>
-               <br/>
              </div>
            </div>
            <!--回复框-->
@@ -118,10 +119,11 @@
               star:false,
               follow:false,
             },
-            commentVo:{comment:{},user:{}},
+            commentVo:{comment:{id:'',content:''},user:{id:'',name:'',image:''}},
             reply:{},
             content:'',
             isShowReplyBox:[],
+            userId:'',
           }
         },
         methods:{
@@ -130,10 +132,13 @@
                if(id==null || id=='') return;
                this.$axios.get(this.$BASE_URL+"/article/detail/"+id).then((resp)=>{
                  this.articleDetail = resp.data;
-                 this.articleDetail.tags = resp.data.article.tag.split(",")
-               }).catch(()=>{
-                 this.$Message.error("发生了未知的异常")
+                 this.articleDetail.tags = (resp.data.article.tag).split(",")
                })
+            },
+            // 浏览
+            addView(id){
+              this.$axios.post(this.$BASE_URL+"/article/view/"+id).then(()=>{
+              })
             },
             // 获取富文本的HTML代码
             getCode(status,value){
@@ -154,6 +159,30 @@
                }).catch(()=>{
                   this.$Message.error("评论失败")
                })
+            },
+            // 删除评论
+            deleteComment(id){
+              this.$Modal.confirm({
+                title:'是否删除该记录?',
+                onOk:()=>{
+                  this.$axios.delete(this.$BASE_URL+"/article/comment/"+id).then((resp)=>{
+                     this.$Message.success("删除成功!")
+                     this.getArticleDetail(this.$route.query.id)
+                  })
+                }
+              })
+            },
+            // 删除评论回复
+            deleteReply(id){
+              this.$Modal.confirm({
+                title:'是否删除该记录?',
+                onOk:()=>{
+                  this.$axios.delete(this.$BASE_URL+"/article/reply/"+id).then((resp)=>{
+                    this.$Message.success("删除成功!")
+                    this.getArticleDetail(this.$route.query.id)
+                  })
+                }
+              })
             },
             // 显示回复框
             showReplyBox(i){
@@ -223,6 +252,8 @@
             },
         },
         mounted() {
+            this.userId = sessionStorage.getItem("user")
+            this.addView(this.$route.query.id)
             this.getArticleDetail(this.$route.query.id)
         }
     }
