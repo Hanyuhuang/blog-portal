@@ -20,7 +20,7 @@ axios.defaults.withCredentials = true
 Vue.prototype.$user = sessionStorage.getItem("user");
 Vue.prototype.$axios = axios;
 Vue.prototype.$qs = qs;
-Vue.prototype.$BASE_URL = 'http://localhost:8090';
+Vue.prototype.$BASE_URL = 'http://212.64.122.153:8090';
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

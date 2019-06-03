@@ -119,7 +119,7 @@
           // 发送验证码
           sendCode(){
             // 验证邮箱是否存在
-            if(this.checkEmailIsValid()) return;
+            if(!this.checkEmailIsValid()) return;
             // 发送验证码
             this.$axios.get(this.$BASE_URL+"/user/code",{params:{email:this.user.email}}).then(()=>{
               this.$Message.success("发送成功,注意查收!")
@@ -144,9 +144,9 @@
           },
           // 验证邮箱是否合法和存在
           checkEmailIsValid(){
-            const reg = new RegExp("^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$"); //正则表达式
             // 验证邮箱格式
-            if (!reg.test(this.user.email)) {
+            const myReg =/^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/
+            if (!myReg.test(this.user.email)) {
               this.$Message.error("邮箱格式错误!")
               return false
             } else {
@@ -156,7 +156,8 @@
           },
           // 验证手机是否合法和存在
           checkPhoneIsValid(){
-            if(!(/^1[34578]\d{9}$/.test(this.user.newPhone))){
+            const phoneRegNoArea = /^1[34578]\d{9}$/
+            if(!phoneRegNoArea.test(this.user.phone)){
               this.$Message.error("手机格式错误!")
               return false
             }else {
@@ -223,15 +224,15 @@
           },
           // websocket
           connect(id){
-            const socket = new WebSocket("ws://localhost:8092/websocket/"+id)
+            const socket = new WebSocket("ws://212.64.122.153:8092/websocket/"+id)
             socket.onopen = this.onOpen
             socket.onclose = this.onClose
             socket.onmessage = this.onMessage
             socket.onerror = this.onError
           },
-          onOpen(){console.log("建立连接")},
-          onClose(){console.log("关闭连接")},
-          onError(){console.log("发生异常")},
+          onOpen(){},
+          onClose(){},
+          onError(){},
           onMessage(resp){
             this.countNotice()
             this.$Notice.info({

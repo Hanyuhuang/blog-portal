@@ -138,18 +138,20 @@
           },
           // 验证邮箱是否合法
           checkEmailIsValid(){
-            const reg = new RegExp("^[a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+$"); //正则表达式
             // 验证邮箱格式
-            if (!reg.test(this.user.newEmail)) {
+            const myReg =/^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/
+            if (!myReg.test(this.user.newEmail)) {
               this.$Message.error("邮箱格式错误!")
               return false
             } else {
               return true
             }
+
           },
           // 验证手机是否合法
           checkPhoneIsValid(){
-            if(!(/^1[34578]\d{9}$/.test(this.user.newPhone))){
+            const phoneRegNoArea = /^1[34578]\d{9}$/
+            if(!phoneRegNoArea.test(this.user.newPhone)){
               this.$Message.error("手机格式错误!")
               return false
             }else {
