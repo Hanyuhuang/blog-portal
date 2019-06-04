@@ -83,8 +83,11 @@
           },
           // 显示HTML代码的文本内容
           toText(HTML) {
-            const value = HTML
-            return value.replace(/<(style|script|iframe)[^>]*?>[\s\S]+?<\/\1\s*>/gi, '').replace(/<[^>]+?>/g, '').replace(/\s+/g, ' ').replace(/ /g, ' ').replace(/>/g, ' ');
+            const value = HTML.replace(/<(style|script|iframe)[^>]*?>[\s\S]+?<\/\1\s*>/gi, '').replace(/<[^>]+?>/g, '').replace(/\s+/g, ' ').replace(/ /g, ' ').replace(/>/g, ' ')
+            if (value.length > 100){
+              return value.substring(0,150)+"......"
+            }
+            return value
           },
           // 时间处理
           dateFormat(date){

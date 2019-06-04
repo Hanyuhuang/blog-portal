@@ -12,7 +12,7 @@
                  :on-success="handleSuccess"
                  :show-upload-list="false"
                  type="drag"
-                 action="http://localhost:8091/upload/image"
+                 action="http://localhost:8090/upload/image"
                  style="display: inline-block;">
                  <img :src="user.image" style="border-radius:50%;height: 60px;width: 60px;">
                </Upload>
@@ -72,7 +72,6 @@
            handleSuccess(response, file, fileList){
              this.user.image = response
              this.$axios.put(this.$BASE_URL+"/user",this.user).then(()=>{
-
              })
            },
        },

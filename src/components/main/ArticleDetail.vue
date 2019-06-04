@@ -18,8 +18,8 @@
        </div>
        <Divider></Divider>
        <!--文章内容-->
-       <div v-html="articleDetail.article.content" style="width: 70px;margin-left: 100px">
-         <div v-if="isShowReplyBox[0]">11111111111111111111111111111</div>
+       <div style="text-align: left;width: 80%;margin-left: 30px">
+         <span v-html="articleDetail.article.content"></span>
          <br/>
        </div>
        <!--点赞收藏评论数-->
@@ -85,10 +85,11 @@
      <!--添加评论-->
      <Card :dis-hover="true" style="margin-top: 20px">
        <h1 style="margin-left: 20px">添加评论</h1><br/>
-       <mavon-editor :editable="$user!=null"
-                     :model="content"
-                     :placeholder="$user==null?'登录后发表评论':'说点什么吧~'"
-                     @change="getCode">
+       <mavon-editor :editable="userId!=null"
+                     v-model="content"
+                     :placeholder="userId==null?'登录后发表评论':'说点什么吧~'"
+                     @change="getCode"
+                     style="position:relative; z-index:1">
        </mavon-editor>
        <Button type="success"
                @click="addComment"
@@ -193,7 +194,6 @@
             addReply(commentId){
                this.reply.articleId = this.articleDetail.article.id
                this.reply.commentId = commentId
-               console.log(this.reply)
                this.$axios.post(this.$BASE_URL+"/article/reply",this.reply).then(()=>{
                   this.$Message.success("回复成功")
                   this.reply = {}

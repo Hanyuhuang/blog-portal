@@ -2,7 +2,7 @@
   <div style="margin-left: 10px">
     <span style="font-size: 30px;margin-left: 10px">我浏览的文章数 ({{total}})</span>
     <Button type="error" size="large" @click="removeAll" style="float: right">清空浏览记录</Button>
-    <br><hr>
+    <Divider/>
     <div v-for="item in articleList">
       <Card :dis-hover="true">
         <Button type="text"
@@ -13,12 +13,10 @@
         <a @click="remove(item.article.id)" style="color: red;float: right">删除记录</a>
         <div>
           <p style="margin-left: 20px">{{toText(item.article.content)}}</p>
-          <p >
-            <!--<span style="margin-left: 20px">作者:{{item.user.name}}</span>-->
-            <span style="float: right">发表时间:{{dateFormat(item.article.createTime)}}</span>
-          </p>
+          <br/>
+          <span style="margin-left: 20px">作者:{{item.user.name}}</span>
+          <span style="float: right">发表时间:{{dateFormat(item.article.createTime)}}</span>
         </div>
-        <br/>
       </Card>
     </div>
     <br/>
@@ -114,8 +112,11 @@
         },
         // 显示HTML代码的文本内容
         toText(HTML) {
-          const value = HTML
-          return value.replace(/<(style|script|iframe)[^>]*?>[\s\S]+?<\/\1\s*>/gi, '').replace(/<[^>]+?>/g, '').replace(/\s+/g, ' ').replace(/ /g, ' ').replace(/>/g, ' ');
+          const value = HTML.replace(/<(style|script|iframe)[^>]*?>[\s\S]+?<\/\1\s*>/gi, '').replace(/<[^>]+?>/g, '').replace(/\s+/g, ' ').replace(/ /g, ' ').replace(/>/g, ' ')
+          if (value.length > 100){
+            return value.substring(0,150)+"......"
+          }
+          return value
         },
         // 时间处理
         dateFormat(date){

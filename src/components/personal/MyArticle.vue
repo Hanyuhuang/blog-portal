@@ -4,7 +4,8 @@
     <Button type="warning" size="large" @click="showForm(false)" style="float: right;margin-right: 20px">
       <Icon type="ios-paper-plane" />
       写文章
-    </Button><br><hr>
+    </Button>
+    <Divider/>
     <div v-for="article in articleList">
       <Card :dis-hover="true">
         <Button type="text"
@@ -41,10 +42,11 @@
       v-model="isShow"
       :mask-closable="false"
       :loading="isShow"
+      fullscreen
       footer-hide>
       <!--写文章-->
       <div>
-          <Form v-model="article" :label-width="80" style="margin-left: 50px;margin-top: 20px" >
+          <Form v-model="article" :label-width="80" style="margin-left: 450px;margin-top: 20px" >
             <FormItem label="文章标题">
               <Input v-model="article.title" style="width: 260px"></Input>
             </FormItem>
@@ -54,26 +56,28 @@
               </Select>
             </FormItem>
             <FormItem label="文章图片">
-              <img :src="article.image" style="height: 60px;width: 60px;margin-left: 20px">
+              <div v-if="typeof article.image != 'undefined'" class="demo-upload-list">
+                  <img :src="article.image">
+              </div>
               <Upload
                 :format="['jpg','jpeg','png']"
                 :max-size="2048*5"
                 :on-success="handleSuccess"
                 :show-upload-list="false"
                 type="drag"
-                action="http://localhost:8091/upload/image"
+                action="http://212.64.122.153:8090/upload/image"
                 style="display: inline-block;width:58px;">
                 <div style="width: 58px;height:58px;line-height: 58px;">
                   <Icon type="ios-camera" size="20"></Icon>
                 </div>
               </Upload>
             </FormItem>
-            <mavon-editor ref="md" v-model="article.mdContent" @imgAdd="imgAdd" @change="showCode"/>
-            <FormItem style="margin-top: 15px">
-              <Button type="primary" @click="submit" style="margin-left: 60px;">提交</Button>
-              <Button  @click="reset" >重置</Button>
-            </FormItem>
           </Form>
+          <mavon-editor ref="md" v-model="article.mdContent" @imgAdd="imgAdd" @change="showCode" style="position:relative; z-index:1"/><br/>
+          <div style="margin-left: 480px">
+            <Button type="primary" @click="submit" style="margin-left: 60px;">提交</Button>
+            <Button  @click="reset" style="margin-left: 30px">重置</Button>
+          </div>
       </div>
     </Modal>
   </div>
@@ -155,7 +159,8 @@
         //  写文章
         add(){
           // 处理标签
-          if (this.selectedList.length>1){
+          this.article.tag = ''
+          if (this.selectedList.length>0){
             this.selectedList.forEach((tag,i)=>{
               if (i==this.selectedList.length-1){
                 this.article.tag+= tag
@@ -174,6 +179,17 @@
         },
         // 修改文章
         edit() {
+          // 处理标签
+          this.article.tag = ''
+          if (this.selectedList.length>0){
+            this.selectedList.forEach((tag,i)=>{
+              if (i==this.selectedList.length-1){
+                this.article.tag+= tag
+              } else{
+                this.article.tag+= tag+","
+              }
+            })
+          }
           this.$axios.put(this.$BASE_URL+"/article",this.article).then(()=>{
             this.$Message.success("修改成功!");
             this.getArticleList();
@@ -184,8 +200,11 @@
         },
         // 显示HTML代码的文本内容
         toText(HTML) {
-          const value = HTML
-          return value.replace(/<(style|script|iframe)[^>]*?>[\s\S]+?<\/\1\s*>/gi, '').replace(/<[^>]+?>/g, '').replace(/\s+/g, ' ').replace(/ /g, ' ').replace(/>/g, ' ');
+          const value = HTML.replace(/<(style|script|iframe)[^>]*?>[\s\S]+?<\/\1\s*>/gi, '').replace(/<[^>]+?>/g, '').replace(/\s+/g, ' ').replace(/ /g, ' ').replace(/>/g, ' ')
+          if (value.length > 100){
+            return value.substring(0,150)+"......"
+          }
+          return value
         },
         // 时间处理
         dateFormat(date){
@@ -221,8 +240,9 @@
         },
         //图片上传成功
         handleSuccess(response, file, fileList){
-          console.log(response)
           this.article.image = response
+          this.$forceUpdate()
+          this.$Message.success("上传成功！")
         },
         imgAdd(pos, file){
           // 第一步.将图片上传到服务器.
@@ -236,7 +256,6 @@
           }).then((resp) => {
             // 第二步.将返回的url替换到文本原位置![...](0) -> ![...](url)
             // $vm.$img2Url 详情见本页末尾
-            console.log(resp.data)
             this.$refs.md.$img2Url(pos, resp.data);
           })
         }
@@ -258,4 +277,22 @@
 </script>
 
 <style scoped>
+  .demo-upload-list{
+    display: inline-block;
+    width: 60px;
+    height: 60px;
+    text-align: center;
+    line-height: 60px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+    position: relative;
+    box-shadow: 0 1px 1px rgba(0,0,0,.2);
+    margin-right: 4px;
+  }
+  .demo-upload-list img{
+    width: 100%;
+    height: 100%;
+  }
 </style>

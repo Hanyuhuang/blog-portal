@@ -61,7 +61,7 @@
              <Input type="email" v-model="user.email" style="width: 200px"></Input>
            </FormItem>
            <FormItem label="验证码" >
-             <Input v-model="code" style="width: 105px"></Input>
+             <Input v-model="user.code" style="width: 105px"></Input>
              <Button :disabled="!btnClickable" @click="sendCode">{{btnText}}</Button>
            </FormItem>
            <FormItem >
@@ -100,8 +100,8 @@
               phone:'',
               email:'',
               loginName:'',
+              code:'',
             },
-            code:'',
             btnClickable:true,
             btnText:'获取验证码',
             count:0,
@@ -181,7 +181,7 @@
               }
             })
             // 注册
-              this.$axios.post(this.$BASE_URL+"/user/register",{user:this.user,code:this.code}).then(()=>{
+              this.$axios.post(this.$BASE_URL+"/user/register",this.user).then(()=>{
                 this.$Message.success('注册成功!');
                 this.isShow = false;
                 this.user={};
