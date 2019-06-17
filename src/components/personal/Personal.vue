@@ -12,7 +12,7 @@
                  :on-success="handleSuccess"
                  :show-upload-list="false"
                  type="drag"
-                 action="http://localhost:8090/upload/image"
+                 action="http://212.64.122.153:8090/upload/image"
                  style="display: inline-block;">
                  <img :src="user.image" style="border-radius:50%;height: 60px;width: 60px;">
                </Upload>

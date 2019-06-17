@@ -68,8 +68,8 @@
            </div>
            <!--回复框-->
            <div v-if="isShowReplyBox[i]">
-             <Input :disabled="$user==null"
-                    :placeholder="$user==null?'登录后回复':'输入你的回复内容'"
+             <Input :disabled="userId==null"
+                    :placeholder="userId==null?'登录后回复':'输入你的回复内容'"
                     style="margin-top: 5px;"
                     v-model="reply.content"></Input><br/>
              <Button style="float: right;margin-top: 8px" @click="addReply(item.comment.id)">回复</Button><br/><br/>
